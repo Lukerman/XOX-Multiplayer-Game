@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace XOX;
 
-use Ratchet\ConnectionInterface;
-
 final class GameManager
 {
     /** @var array<int, Player> */
@@ -20,12 +18,12 @@ final class GameManager
     /** @var array<string, GameRoom> */
     private array $rooms = [];
 
-    public function registerConnection(ConnectionInterface $connection): void
+    public function registerConnection(SocketConnection $connection): void
     {
         $playerId = $this->generatePlayerId();
         $player = new Player($playerId, $connection);
 
-        $this->playersByConnection[$connection->resourceId] = $player;
+        $this->playersByConnection[$connection->id()] = $player;
         $this->playersById[$playerId] = $player;
 
         $this->waitingQueue[] = $playerId;
@@ -34,9 +32,9 @@ final class GameManager
         $this->tryMatchPlayers();
     }
 
-    public function handleMessage(ConnectionInterface $connection, string $rawMessage): void
+    public function handleMessage(SocketConnection $connection, string $rawMessage): void
     {
-        $player = $this->playersByConnection[$connection->resourceId] ?? null;
+        $player = $this->playersByConnection[$connection->id()] ?? null;
         if ($player === null) {
             return;
         }
@@ -75,14 +73,14 @@ final class GameManager
         }
     }
 
-    public function disconnect(ConnectionInterface $connection): void
+    public function disconnect(SocketConnection $connection): void
     {
-        $player = $this->playersByConnection[$connection->resourceId] ?? null;
+        $player = $this->playersByConnection[$connection->id()] ?? null;
         if ($player === null) {
             return;
         }
 
-        unset($this->playersByConnection[$connection->resourceId], $this->playersById[$player->id]);
+        unset($this->playersByConnection[$connection->id()], $this->playersById[$player->id]);
         $this->removeFromWaitingQueue($player->id);
 
         if ($player->roomId !== null) {

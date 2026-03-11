@@ -4,16 +4,14 @@ declare(strict_types=1);
 
 namespace XOX;
 
-use Ratchet\ConnectionInterface;
-
 final class Player
 {
     public readonly string $id;
-    public readonly ConnectionInterface $connection;
+    public readonly SocketConnection $connection;
     public string $symbol = '';
     public ?string $roomId = null;
 
-    public function __construct(string $id, ConnectionInterface $connection)
+    public function __construct(string $id, SocketConnection $connection)
     {
         $this->id = $id;
         $this->connection = $connection;

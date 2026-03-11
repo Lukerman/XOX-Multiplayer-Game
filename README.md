@@ -1,6 +1,6 @@
 # XOX Multiplayer Game
 
-Real-time 1v1 Tic-Tac-Toe (XOX) built with PHP and WebSockets.
+Real-time 1v1 Tic-Tac-Toe (XOX) built with pure PHP and WebSockets.
 
 Players are auto-matched when they open the page. No login, no registration.
 
@@ -17,7 +17,7 @@ Players are auto-matched when they open the page. No login, no registration.
 ## Tech Stack
 
 - Backend: PHP 8.x
-- Real-time: Ratchet (`cboden/ratchet`)
+- Real-time: Native WebSocket server using PHP sockets (`stream_socket_server` + `stream_select`)
 - Frontend: HTML, CSS, Vanilla JavaScript
 - State storage: In-memory (inside long-running PHP server)
 - Transport: JSON messages over WebSocket
@@ -35,7 +35,6 @@ Players are auto-matched when they open the page. No login, no registration.
 │   ├── index.html
 │   ├── game.js
 │   └── style.css
-├── composer.json
 └── README.md
 ```
 
@@ -69,13 +68,7 @@ All messages use JSON format:
 
 ## Setup
 
-### 1. Install PHP dependencies
-
-```bash
-composer install
-```
-
-### 2. Start WebSocket server
+### 1. Start WebSocket server
 
 ```bash
 php server.php
@@ -83,13 +76,13 @@ php server.php
 
 Server listens on `ws://localhost:8080`.
 
-### 3. Serve frontend
+### 2. Serve frontend
 
 ```bash
 php -S localhost:3000 -t public/
 ```
 
-### 4. Play
+### 3. Play
 
 Open two tabs at `http://localhost:3000` and the players will be matched automatically.
 
@@ -97,4 +90,4 @@ Open two tabs at `http://localhost:3000` and the players will be matched automat
 
 - Keep `server.php` running as a long-lived process.
 - For production, run WebSocket server under a process manager (e.g. Supervisor/systemd).
-- For secure transport (`wss://`), terminate TLS at a reverse proxy and forward to Ratchet.
+- For secure transport (`wss://`), terminate TLS at a reverse proxy and forward to this PHP process.
