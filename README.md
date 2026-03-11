@@ -82,6 +82,8 @@ Server listens on `ws://localhost:8080`.
 php -S localhost:3000 -t public/
 ```
 
+If your browser cannot reach the WebSocket server automatically, set a manual URL in [public/index.html](/workspaces/XOX-Multiplayer-Game/public/index.html) via the `data-ws-url` attribute on `<body>`, for example `ws://localhost:8080` or `wss://your-domain.example/ws`.
+
 ### 3. Play
 
 Open two tabs at `http://localhost:3000` and the players will be matched automatically.
@@ -91,3 +93,4 @@ Open two tabs at `http://localhost:3000` and the players will be matched automat
 - Keep `server.php` running as a long-lived process.
 - For production, run WebSocket server under a process manager (e.g. Supervisor/systemd).
 - For secure transport (`wss://`), terminate TLS at a reverse proxy and forward to this PHP process.
+- The frontend now tries same-origin WebSocket endpoints first, then falls back to `:8080` automatically.

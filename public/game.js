@@ -11,37 +11,100 @@
   const cellButtons = Array.from(document.querySelectorAll('.cell'));
 
   const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-  const wsUrl = `${wsProtocol}://${window.location.hostname}:8080`;
+  const configuredWsUrl = document.body.dataset.wsUrl || '';
 
   let socket;
   let mySymbol = null;
   let board = Array(9).fill(null);
   let myTurn = false;
   let gameActive = false;
+  let reconnectTimer = null;
+  let activeWsUrl = null;
+
+  function buildCandidateUrls() {
+    if (configuredWsUrl) {
+      return [configuredWsUrl];
+    }
+
+    const candidates = [];
+    const sameOriginHost = window.location.host;
+    const fallbackHost = `${window.location.hostname}:8080`;
+
+    candidates.push(`${wsProtocol}://${sameOriginHost}/ws`);
+    candidates.push(`${wsProtocol}://${sameOriginHost}`);
+
+    if (sameOriginHost !== fallbackHost) {
+      candidates.push(`${wsProtocol}://${fallbackHost}`);
+    }
+
+    return [...new Set(candidates)];
+  }
 
   function connect() {
-    socket = new WebSocket(wsUrl);
+    const candidates = buildCandidateUrls();
+    let index = 0;
 
-    socket.addEventListener('open', () => {
-      setStatus('Connected. Waiting for matchmaking...');
-    });
+    setStatus('Connecting...');
 
-    socket.addEventListener('message', (event) => {
-      const message = JSON.parse(event.data);
-      handleServerMessage(message.type, message.payload || {});
-    });
+    const tryNext = () => {
+      if (index >= candidates.length) {
+        scheduleReconnect('Unable to reach game server. Retrying...');
+        return;
+      }
 
-    socket.addEventListener('close', () => {
-      gameActive = false;
-      myTurn = false;
-      setTurnText('-');
-      setStatus('Disconnected. Reconnecting...');
-      setTimeout(connect, 1000);
-    });
+      const candidateUrl = candidates[index++];
+      let opened = false;
+      activeWsUrl = candidateUrl;
+      setStatus(`Connecting to ${candidateUrl}...`);
 
-    socket.addEventListener('error', () => {
-      setStatus('Network issue. Retrying...');
-    });
+      socket = new WebSocket(candidateUrl);
+
+      socket.addEventListener('open', () => {
+        opened = true;
+        clearReconnectTimer();
+        setStatus('Connected. Waiting for matchmaking...');
+      }, { once: true });
+
+      socket.addEventListener('message', (event) => {
+        const message = JSON.parse(event.data);
+        handleServerMessage(message.type, message.payload || {});
+      });
+
+      socket.addEventListener('close', () => {
+        gameActive = false;
+        myTurn = false;
+        setTurnText('-');
+
+        if (!opened && index < candidates.length) {
+          tryNext();
+          return;
+        }
+
+        scheduleReconnect(`Disconnected from ${activeWsUrl || 'server'}. Reconnecting...`);
+      }, { once: true });
+
+      socket.addEventListener('error', () => {
+        try {
+          socket.close();
+        } catch (_error) {
+        }
+      }, { once: true });
+    };
+
+    tryNext();
+  }
+
+  function clearReconnectTimer() {
+    if (reconnectTimer !== null) {
+      window.clearTimeout(reconnectTimer);
+      reconnectTimer = null;
+    }
+  }
+
+  function scheduleReconnect(message) {
+    clearReconnectTimer();
+    setStatus(message);
+    reconnectTimer = window.setTimeout(connect, 1500);
   }
 
   function handleServerMessage(type, payload) {
