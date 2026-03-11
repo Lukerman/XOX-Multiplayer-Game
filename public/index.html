@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>XOX Multiplayer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="background-glow" aria-hidden="true"></div>
+    <main class="app-shell">
+      <header class="topbar">
+        <h1>XOX Arena</h1>
+        <p id="statusText" class="status">Connecting...</p>
+      </header>
+
+      <section class="meta">
+        <div class="meta-card">
+          <span class="label">YOU</span>
+          <strong id="youSymbol">-</strong>
+        </div>
+        <div class="meta-card">
+          <span class="label">TURN</span>
+          <strong id="turnText">-</strong>
+        </div>
+      </section>
+
+      <section class="board-wrap" id="boardWrap" aria-live="polite">
+        <div id="board" class="board" role="grid" aria-label="Tic Tac Toe board">
+          <button class="cell" data-cell="0" aria-label="Cell 1"></button>
+          <button class="cell" data-cell="1" aria-label="Cell 2"></button>
+          <button class="cell" data-cell="2" aria-label="Cell 3"></button>
+          <button class="cell" data-cell="3" aria-label="Cell 4"></button>
+          <button class="cell" data-cell="4" aria-label="Cell 5"></button>
+          <button class="cell" data-cell="5" aria-label="Cell 6"></button>
+          <button class="cell" data-cell="6" aria-label="Cell 7"></button>
+          <button class="cell" data-cell="7" aria-label="Cell 8"></button>
+          <button class="cell" data-cell="8" aria-label="Cell 9"></button>
+        </div>
+      </section>
+
+      <section id="overlay" class="overlay hidden" aria-live="assertive">
+        <h2 id="overlayTitle">Game Over</h2>
+        <p id="overlayText"></p>
+        <button id="rematchBtn" class="action-btn">Rematch</button>
+      </section>
+    </main>
+
+    <script src="./game.js"></script>
+  </body>
+</html>
